@@ -3,59 +3,51 @@
 /*                                                        :::      ::::::::   */
 /*   ft_printf.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: juhur <juhur@student.42.fr>                +#+  +:+       +#+        */
+/*   By: juhur <juhur@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/05/20 22:05:58 by juhur             #+#    #+#             */
-/*   Updated: 2021/12/08 17:57:04 by juhur            ###   ########.fr       */
+/*   Created: 2021/12/09 16:27:21 by juhur             #+#    #+#             */
+/*   Updated: 2021/12/09 16:27:28 by juhur            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdarg.h>
-#include <unistd.h>
+#include <stdbool.h>
 #include "ft_printf.h"
 
-int	print_char(int c)
+static int	process_format_specifier(va_list ap, const char *format)
 {
-	return (write(1, &c, 1));
+	int		len;
+
+	len = 0;
+	if (*format == CHAR_CHAR)
+		len = print_char(va_arg(ap, int));
+	else if (*format == CHAR_PERCENT)
+		len = print_char(CHAR_PERCENT);
+	else if (*format == CHAR_STRING)
+		len = print_string(va_arg(ap, char *));
+	else if (*format == CHAR_DECIMAL || *format == CHAR_INTEGER)
+		len = print_int(va_arg(ap, int));
+	else if (*format == CHAR_HEXA_LOWER || *format == CHAR_HEXA_UPPER)
+		len = print_hexa(va_arg(ap, unsigned int), *format);
+	else if (*format == CHAR_UNSIGNED)
+		len = print_uint(va_arg(ap, unsigned int));
+	else if (*format == CHAR_PTR_ADDR)
+		len = print_address(va_arg(ap, t_ull));
+	return (len);
 }
 
-int	print_string(char *s)
+static bool	is_format_specifier(const char format)
 {
-	int	ret;
+	char	*format_specifier;
 
-	if (s == NULL)
-		s = "(null)";
-	ret = 0;
-	while (s[ret])
+	format_specifier = FORMAT_SPECIFIER;
+	while (*format_specifier)
 	{
-		write(1, &s[ret], 1);
-		ret++;
+		if (*format_specifier == format)
+			return (true);
+		format_specifier++;
 	}
-	return (ret);
-}
-
-int	ft_printf_main(va_list ap, const char *format)
-{
-	int		ret;
-	char	f;
-
-	f = *format;
-	ret = 0;
-	if (f == 'c')
-		ret = print_char(va_arg(ap, int));
-	else if (f == '%')
-		ret = print_char('%');
-	else if (f == 's')
-		ret = print_string(va_arg(ap, char *));
-	else if (f == 'd' || f == 'i')
-		ret = print_nbr(va_arg(ap, int), f);
-	else if (f == 'x' || f == 'X')
-		ret = print_nbr(va_arg(ap, long), f);
-	else if (f == 'u')
-		ret = print_nbr(va_arg(ap, unsigned int), f);
-	else if (f == 'p')
-		ret = print_nbr(va_arg(ap, unsigned long), f);
-	return (ret);
+	return (false);
 }
 
 /*
@@ -65,18 +57,21 @@ int	ft_printf_main(va_list ap, const char *format)
 int	ft_printf(const char *format, ...)
 {
 	va_list	ap;
-	int		ret;
+	int		len;
 
-	ret = 0;
+	len = 0;
 	va_start(ap, format);
 	while (*format)
 	{
-		if (*format == '%')
-			ret += ft_printf_main(ap, ++format);
+		if (*format == CHAR_PERCENT)
+		{
+			if (is_format_specifier(*(format + 1)))
+				len += process_format_specifier(ap, ++format);
+		}
 		else
-			ret += write(1, format, 1);
+			len += print_char(*format);
 		format++;
 	}
 	va_end(ap);
-	return (ret);
+	return (len);
 }

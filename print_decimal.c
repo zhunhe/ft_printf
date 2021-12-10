@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   print_int.c                                        :+:      :+:    :+:   */
+/*   print_decimal.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: juhur <juhur@student.42seoul.kr>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/08 19:42:28 by juhur             #+#    #+#             */
-/*   Updated: 2021/12/08 19:43:30 by juhur            ###   ########.fr       */
+/*   Updated: 2021/12/09 15:58:44 by juhur            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,27 @@
 
 int	print_int(int d)
 {
-	int			ret;
+	int			len;
 	long long	ll;
 
-	ret = 0;
+	len = 0;
 	ll = (long long)d;
 	if (ll < 0)
 	{
 		ll = -ll;
-		ret += print_char('-');
+		len += print_char(CHAR_MINUS);
 	}
-	ret += get_nbr_len((unsigned long long)ll, 10);
-	ft_putnbr_main((unsigned long long)ll, "0123456789", 10);
-	return (ret);
+	len += get_length(ll, BASE_LEN_DECIMAL);
+	print_number(ll, CHARSET_DECIMAL, BASE_LEN_DECIMAL);
+	return (len);
+}
+
+int	print_uint(unsigned int u)
+{
+	int	len;
+
+	len = 0;
+	len += get_length(u, BASE_LEN_DECIMAL);
+	print_number(u, CHARSET_DECIMAL, BASE_LEN_DECIMAL);
+	return (len);
 }
